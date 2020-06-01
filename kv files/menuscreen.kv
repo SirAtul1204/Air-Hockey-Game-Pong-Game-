@@ -1,0 +1,41 @@
+<Button>:
+    font_name: "Fonts/azonix-font/Azonix-1VB0.otf"
+    font_size: self.height/6
+<MenuScreen>
+    FloatLayout:
+        canvas:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: 'images/menu.jpg'
+        Button:
+            background_normal: "images/ButtonAlways.png"
+            background_down: "images/ButtonPressed.png"
+            text: "Play with Computer"
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            pos_hint: {"top": 0.8, "x" : 0.25}
+            size_hint: 0.5, 0.2
+            on_release: app.changescreen("game_screen_computer")
+        Button:
+            background_normal: "images/ButtonAlways.png"
+            background_down: "images/ButtonPressed.png"
+            text: "Play with Player"
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            pos_hint: {"top": 0.65, "x": 0.25}
+            size_hint: 0.5, 0.2
+            on_release: app.changescreen("game_screen_player")
+        Button:
+            background_normal: "images/ButtonAlways.png"
+            background_down: "images/ButtonPressed.png"
+            text: "Quit"
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            pos_hint: {"top": 0.5, "x": 0.25}
+            size_hint: 0.5, 0.2
+            on_release: quit()
+        

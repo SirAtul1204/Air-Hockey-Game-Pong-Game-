@@ -1,0 +1,17 @@
+#:include "kv files/menuscreen.kv"
+#:include "kv files/gamescreenComputer.kv"
+#:include "kv files/gamescreenPlayer.kv"
+
+GridLayout:
+    cols:1
+    ScreenManager:
+        id: screen_manager
+        MenuScreen:
+            id: menu_screen
+            name: "menu_screen"
+        GameScreenComputer:
+            id: game_screen_computer
+            name: "game_screen_computer"
+        GameScreenPlayer:
+            id: game_screen_player
+            name: "game_screen_player"
