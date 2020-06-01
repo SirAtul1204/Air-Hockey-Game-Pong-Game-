@@ -1,3 +1,5 @@
+**It's not fully completed yet**
+
 This is my version of the Air Hockey (Pong) Game developed using Python3 and Kivy 1.11.0
 
 To run this program, you need to
