@@ -1,7 +1,154 @@
+#:import utils kivy.utils
+#:import rgba kivy.utils.get_color_from_hex
+<Disk>
+    canvas:
+        Ellipse:
+            size: 50, 50
+            pos: self.pos
+
+<Bat1>:
+    canvas:
+        Color:
+            rgb: utils.get_color_from_hex("ff0000")
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<Bat2>:
+    canvas:
+        Color:
+            rgb: utils.get_color_from_hex("0000ff")
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+<Border>:
+    canvas:
+        Color:
+            rgb: utils.get_color_from_hex("#ffffff")
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+
 <GameScreenComputer>
-    Button:
-        text: "You are at the Game Screen with Computer"
-        text_size: self.size
-        valign: 'middle'
-        halign: 'center'
-        on_release: app.changescreen("menu_screen")
+    FloatLayout:
+        backbtn: backbtn.__self__
+        upper_border: upper_border.__self__
+        bottom_border: bottom_border.__self__
+        timer: timer.__self__
+        disk: disk.__self__
+        player_left_bat: player_left_bat.__self__
+        player_right_bat: player_right_bat.__self__
+        startbtn: startbtn.__self__
+        highscore: highscore.__self__
+        pause: pause.__self__
+        resume: resume.__self__
+        canvas:
+            Color:
+                rgb: utils.get_color_from_hex("#000000")
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        Border:
+            id: upper_border
+            pos_hint: {"top": 0.99, "x": 0}
+            size_hint: 1, 0.01
+        Border:
+            id: bottom_border
+            pos_hint: {"top": 0.02, "x": 0}
+            size_hint: 1, 0.01
+        Label:
+            id: timer
+            text: "0"
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            pos_hint: {"top": 0.97, "x": 0.42}
+            size_hint: 0.2, 0.2
+            font_size: self.height/1.5
+            font_name: "Fonts/azonix-font/Azonix-1VB0.otf"
+        Disk:
+            id: disk
+            size_hint: 0.05, 0.05
+            pos_hint: {"x": 0.5, "top": 0.5}
+        Bat1:
+            id: player_left_bat
+            size_hint: 0.02, 0.4
+            pos_hint: {"x": 0, "y": 0.3}
+        Bat2:
+            id: player_right_bat
+            size_hint: 0.02, 0.1
+            pos_hint: {"x": 0.98, "y": 0.3}
+        Button:
+            id: startbtn
+            visible: True
+            text: "Start"
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            size_hint: 0.2, 0.15
+            pos_hint: {"x": 0.42, "y" : 0.25}
+            on_release: root.serve()
+            background_normal: "images/inGameButton.png"
+            background_down: "images/inGameButton.png"
+            font_size: self.height/3
+        Label:
+            id: highscore
+            visible: False
+            text: "High Score: "
+            opacity: 0
+            disabled: True
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            font_size: self.height/6
+            size_hint: 0.3, 0.25
+            pos_hint: {"top": 0.625, "x": 0.37}
+            font_name: "Fonts/azonix-font/Azonix-1VB0.otf"
+            
+        Button:
+            id: pause
+            text: "Pause"
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            font_size: self.height/4
+            size_hint: 0.1, 0.075
+            pos_hint: {"top": 0.82, "x": 0.43}
+            background_normal: "images/inGameButton.png"
+            background_down: "images/inGameButton.png"
+            on_release: root.pause()
+            visible: True
+            opacity: 1
+            disabled: True
+        Button:
+            id: resume
+            text: "Resume"
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            font_size: self.height/4
+            size_hint: 0.1, 0.075
+            pos_hint: {"top": 0.82, "x": 0.53}
+            background_normal: "images/inGameButton.png"
+            background_down: "images/inGameButton.png"
+            on_release: root.resume()
+            visible: True
+            opacity: 1
+            disabled: True
+        Button:
+            id: backbtn
+            visible: True
+            text: "MENU"
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            size_hint: 0.2, 0.15
+            pos_hint: {"x": 0.42, "y" : 0.1}
+            on_release: app.changescreen("menu_screen")
+            background_normal: "images/inGameButton.png"
+            background_down: "images/inGameButton.png"
+            font_size: self.height/3
+            opacity: 1
+            disabled: False

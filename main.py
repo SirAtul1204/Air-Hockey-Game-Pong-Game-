@@ -14,8 +14,10 @@ from kivy.core.window import Window
 class Disk(Widget):
     pass
 
-#Bat Widget Class
-class Bat(Widget):
+#Bat Widgets Class
+class Bat1(Widget):
+    pass
+class Bat2(Widget):
     pass
 
 #Border Widget Class for upper and lower border
@@ -33,7 +35,226 @@ class MenuScreen(Screen):
 
 #Screen and its controls for Play with Computer
 class GameScreenComputer(Screen):
-    pass
+
+    randnum = random.uniform(0.45, 0.55) #Proper use of this is not functional yet. Its meant to randomly choosing a side to start the game.
+    original_x = 0
+    original_y = 0
+    ball_speed_x = 0.007
+    ball_speed_y = 0.007
+    main_game_event = None
+    timer_event = None
+    scorePlayer1 = 0
+    scorePlayer2 = 0
+    
+    hscore = ""
+
+    tap = SoundLoader.load("music/tap.mp3")
+
+    def on_enter(self):
+        Window.bind(on_key_down=self._keydown)
+        Window.bind(on_joy_axis=self.on_joy_axis)
+        self.resetall()
+        hs = open("files/hgs.txt", 'r')
+        self.hscore = hs.read()
+        print(self.hscore)
+        hs.close()
+        highscore = self.ids['highscore']
+        highscore.text = highscore.text + self.hscore
+
+    def resetall(self):
+        self.reset()
+
+        bat_left = self.ids['player_left_bat']
+        bat_left.pos_hint = {"x": 0, "y": 0.3}
+        bat_left.size_hint = 0.02, 0.4
+
+        bat_right = self.ids['player_right_bat']
+        bat_right.pos_hint = {"x": 0.98, "y": 0.3}
+        bat_right.size_hint = 0.02, 0.1
+
+        timer = self.ids['timer']
+        timer.text = "0"
+
+
+        resume = self.ids['resume']
+        resume.disabled = True
+
+        startbtn = self.ids['startbtn']
+        startbtn.visible = True
+        startbtn.opacity = 1
+        startbtn.disabled = False
+
+        highscore = self.ids['highscore']
+        highscore.visible = False
+        highscore.opacity = 0
+        highscore.disabled = True
+
+    def reset(self): #Reset the disk position to default after a point is scored by any player
+        disk = self.ids['disk']
+        disk.pos_hint = {"x": 0.5, "top": 0.5}
+        self.ball_speed_x = 0.007
+        self.ball_speed_y = 0.007
+
+
+    def serve(self): #Starts the game (Called when the START Button is clicked)
+        self.resetall()
+        backbtn = self.ids['backbtn'] #Hides the Menu Button
+        backbtn.disabled = True
+        backbtn.visible = False
+        backbtn.opacity = 0
+        pause = self.ids['pause']
+        pause.disabled = False
+        startbtn = self.ids['startbtn'] # Hides the START Button
+        startbtn.visible = False
+        startbtn.opacity = 0
+        startbtn.disabled = True
+        disk = self.ids['disk']
+        disk.pos_hint = {"x": self.randnum, "top": self.randnum}
+        self.original_x = disk.pos_hint["x"]
+        self.original_y = disk.pos_hint["top"]
+        if (disk.pos_hint['x'] < 1):
+            self.main_game_event = Clock.schedule_interval(self.callback, 1.0/120.0) #Kivy Clock function to call a function repeatedly, calls the callback() function described below
+            self.timer_event = Clock.schedule_interval(self.timer, 1) #Calls the timer() function described below
+
+    def callback(self, dt):  #Gets called 120 times in 1 second giving 120 FPS, if the disk is on the screen
+        disk = self.ids['disk']
+        x = disk.pos_hint['x']
+        y = disk.pos_hint['top']
+        bat_left = self.ids['player_left_bat']
+        bat_right = self.ids['player_right_bat']
+        if (disk.collide_widget(bat_left) or (disk.collide_widget(bat_right))): #To check if the disk is collided with the bats(both left and right)
+            self.ball_speed_x *= -1
+            self.tap.play()
+        if (y >= 0.95) or (y <= 0.07): #To check if the disk is collided with the borders(both upper and lower)
+            self.ball_speed_y *= -1
+        disk.pos_hint = {"x": x + self.ball_speed_x, "top": y + self.ball_speed_y}
+        
+
+        #Computer Controls
+        bat_right.pos_hint = {"x": 0.98, "y": disk.pos_hint['top']}
+    
+    def on_touch_move(self, touch): # Kivy Function to for touch operation
+        bat_left = self.ids['player_left_bat']
+        bat_right = self.ids['player_right_bat']
+        widl, lengl = bat_left.size_hint
+        widr, lengr = bat_right.size_hint
+        # left players(player 1)
+        if (touch.x < self.width/3) and (touch.y/self.height <= 0.975 - (lengl/2) and (touch.y/self.height >= 0.025 + (lengl/2))): #0.975 is the top border and 0.025 is the bottom border
+            if (bat_left.pos_hint["y"] <= 0.97 - lengl + 0.005) and (bat_left.pos_hint["y"] >= 0.02 + 0.005): #0.005 is just the correction term
+                bat_left.pos_hint = {"y": (touch.y/self.height)-lengl/2, "x": 0}
+            elif (bat_left.pos_hint["y"] > 0.97 - lengl + 0.005):
+                bat_left.pos_hint = {"y": 0.97-lengl+ 0.005, "x": 0}
+            else:
+                bat_left.pos_hint = {"y" : 0.02+0.005, "x": 0}
+
+
+    def timer(self, dt): #The Timer on the Screen, gets called every second
+        timer = self.ids['timer']
+        time = int(timer.text)
+        time += 1
+        timer.text = str(time)
+        if (time%10 == 0) and (time != 180): #Increases the speed of the ball in every 10 seconds
+            if (self.ball_speed_x > 0):
+                self.ball_speed_x += 0.001
+            if(self.ball_speed_y > 0):
+                self.ball_speed_y += 0.001
+            if (self.ball_speed_x < 0):
+                self.ball_speed_x -= 0.001
+            if (self.ball_speed_y < 0):
+                self.ball_speed_y -= 0.001
+        bat_left = self.ids['player_left_bat']
+        
+        wedl, lengl = bat_left.size_hint
+        
+        if (time%20 == 0) and (time != 180) and (lengl >= 0.2):
+            lengl -= 0.05
+            bat_left.size_hint = wedl, lengl
+            
+        disk = self.ids['disk']
+        if (disk.pos_hint['x'] < 0):
+            self.timer_event.cancel() #Cancels the timer clock event
+            
+            self.main_game_event.cancel() #Cancels the main game clock event
+            
+            
+            pause = self.ids['pause']
+            pause.disabled = True
+            
+            startbtn = self.ids['startbtn']
+            startbtn.visible = True
+            startbtn.opacity = 1
+            startbtn.disabled = False
+
+            backbtn = self.ids['backbtn']
+            backbtn.visible = True
+            backbtn.opacity = 1
+            backbtn.disabled = False
+
+            highscore = self.ids['highscore']
+            highscore.visible = True
+            highscore.opacity = 1
+            highscore.disabled = False
+            
+            if (int(timer.text) > int(self.hscore)):
+                hs = open("files/hgs.txt", 'w')
+                hs.write(str(timer.text))
+                hs.close()
+                highscore.text = "New Highscore: " + timer.text
+            else:
+                highscore.text = "Not Good Enough, Highscore: " + self.hscore
+
+    def pause(self): #Pause Functionality of the game
+        self.main_game_event.cancel()
+        self.timer_event.cancel()
+        pause = self.ids['pause']
+        pause.disabled = True
+        resume = self.ids['resume']
+        resume.disabled = False
+        backbtn = self.ids['backbtn']
+        backbtn.disabled = False
+        backbtn.opacity = 1
+        backbtn.visible = True 
+
+    def resume(self): #Resume Functionality of game
+        self.main_game_event = Clock.schedule_interval(self.callback, 1.0/120.0)
+        self.timer_event = Clock.schedule_interval(self.timer, 1)
+        resume = self.ids['resume']
+        resume.disabled = True
+        pause = self.ids['pause']
+        pause.disabled = False
+        backbtn = self.ids['backbtn']
+        backbtn.disabled = True
+        backbtn.opacity = 0
+        backbtn.visible = False
+
+    def _keydown(self, garbage, garbage2, not_garbage, symbol, garbage4):
+        bat_left = self.ids['player_left_bat']
+        widl, lengl = bat_left.size_hint
+        
+        
+        left_y = bat_left.pos_hint['y']
+        
+        if (symbol == "w" and left_y + lengl < 0.97):
+            bat_left.pos_hint = {"x": 0, "y": left_y + 0.04}
+        if (symbol == "s" and left_y > 0.04):
+            bat_left.pos_hint = {"x": 0, "y": left_y - 0.04}
+        
+        if (symbol == 'p'):
+            self.pause()
+        if (symbol == 'r'):
+            self.resume()
+
+    def on_joy_axis(self, win, stickid, axisid, value):
+        bat_left = self.ids['player_left_bat']
+        widl, lengl = bat_left.size_hint
+        left_y = bat_left.pos_hint['y']
+        if (axisid == 1 and value < 0 and left_y + lengl < 0.97):
+            bat_left.pos_hint = {"x": 0, "y": left_y + 0.04}
+            # self.on_joy_axis(win, stickid, axisid, value)
+        if (axisid == 1 and value > 0 and left_y > 0.04):
+            bat_left.pos_hint = {"x": 0, "y": left_y - 0.04}
+
+
 
 #Screen and its controls for Play with Player
 class GameScreenPlayer(Screen):
@@ -52,6 +273,40 @@ class GameScreenPlayer(Screen):
 
     def on_enter(self):
         Window.bind(on_key_down=self._keydown)
+        Window.bind(on_joy_axis=self.on_joy_axis)
+        self.resetall()
+
+    def resetall(self):
+        self.reset()
+
+        bat_left = self.ids['player_left_bat']
+        bat_left.pos_hint = {"x": 0, "y": 0.3}
+        bat_left.size_hint = 0.02, 0.4
+
+        bat_right = self.ids['player_right_bat']
+        bat_right.pos_hint = {"x": 0.98, "y": 0.3}
+        bat_right.size_hint = 0.02, 0.4
+
+        timer = self.ids['timer']
+        timer.text = "180"
+
+        player_left_score = self.ids['player_left_score']
+        player_left_score.text = "0"
+        player_right_score = self.ids['player_right_score']
+        player_right_score.text = "0"
+
+        winner_label = self.ids['winner_label']
+        winner_label.visible = False
+        winner_label.opacity = 0
+        winner_label.disabled = True
+
+        resume = self.ids['resume']
+        resume.disabled = True
+
+        startbtn = self.ids['startbtn']
+        startbtn.visible = True
+        startbtn.opacity = 1
+        startbtn.disabled = False
 
     def reset(self): #Reset the disk position to default after a point is scored by any player
         disk = self.ids['disk']
@@ -61,6 +316,7 @@ class GameScreenPlayer(Screen):
 
 
     def serve(self): #Starts the game (Called when the START Button is clicked)
+        self.resetall()
         backbtn = self.ids['backbtn'] #Hides the Menu Button
         backbtn.disabled = True
         backbtn.visible = False
@@ -153,8 +409,23 @@ class GameScreenPlayer(Screen):
 
         if (timer.text == "0"):
             self.timer_event.cancel() #Cancels the timer clock event
+            
             self.main_game_event.cancel() #Cancels the main game clock event
+            
             self.showWinner() #Calling a function showWinner() to present the winner's name in the screen
+            
+            pause = self.ids['pause']
+            pause.disabled = True
+            
+            startbtn = self.ids['startbtn']
+            startbtn.visible = True
+            startbtn.opacity = 1
+            startbtn.disabled = False
+
+            backbtn = self.ids['backbtn']
+            backbtn.visible = True
+            backbtn.opacity = 1
+            backbtn.disabled = False
     
     def showWinner(self):
         winner_label = self.ids['winner_label']
@@ -163,8 +434,13 @@ class GameScreenPlayer(Screen):
         winner_label.disabled = False
         if(int(self.scorePlayer1) > int(self.scorePlayer2)):
             winner_label.text = "Player 1 Wins"
+            winner_label.color = 1, 0, 0, 1 #Red
+        elif (int(self.scorePlayer1) == int(self.scorePlayer2)):
+            winner_label.text = "Draw" #White
+            winner_label.color = 1, 1, 1, 1
         else:
             winner_label.text = "Player 2 Wins"
+            winner_label.color = 0, 0, 1, 1 #Blue
 
     def pause(self): #Pause Functionality of the game
         self.main_game_event.cancel()
@@ -197,7 +473,6 @@ class GameScreenPlayer(Screen):
         widr, lengr = bat_left.size_hint
         left_y = bat_left.pos_hint['y']
         right_y = bat_right.pos_hint['y']
-        print(left_y)
         if (symbol == "w" and left_y + lengl < 0.97):
             bat_left.pos_hint = {"x": 0, "y": left_y + 0.04}
         if (symbol == "s" and left_y > 0.04):
@@ -210,6 +485,16 @@ class GameScreenPlayer(Screen):
             self.pause()
         if (symbol == 'r'):
             self.resume()
+
+    def on_joy_axis(self, win, stickid, axisid, value):
+        bat_left = self.ids['player_left_bat']
+        widl, lengl = bat_left.size_hint
+        left_y = bat_left.pos_hint['y']
+        if (axisid == 1 and value < 0 and left_y + lengl < 0.97):
+            bat_left.pos_hint = {"x": 0, "y": left_y + 0.04}
+            # self.on_joy_axis(win, stickid, axisid, value)
+        if (axisid == 1 and value > 0 and left_y > 0.04):
+            bat_left.pos_hint = {"x": 0, "y": left_y - 0.04}
 
 
 #Loads main.kv using the Builder in Kivy Library
@@ -227,6 +512,8 @@ class MainApp(App):
             screen_manager.transition.direction = "right"
         if (screen_manager.current != "menu_screen"):
             screen_manager.transition.direction = "left"
+
+    
 
 #Function to run the App
 MainApp().run()
